@@ -23,11 +23,14 @@ def convert_to_month(value):
 
 for bareme in [1, 2, 3]:
     if bareme == 1:
-        gross_values = range(675, 7500 + 15, 15)
+        first_amount = 555
+        gross_values = [0] + list(range(first_amount, 7500 + 15, 15))
     elif bareme == 2:
-        gross_values = range(1335, 7500 + 15, 15)
+        first_amount = 1065
+        gross_values = [0] + list(range(first_amount, 7500 + 15, 15))
     elif bareme == 3:
-        gross_values = range(15, 7500 + 15, 15)
+        first_amount = 15
+        gross_values = [0] + list(range(first_amount, 7500 + 15, 15))
 
     for index, gross in enumerate(gross_values):
 
@@ -56,19 +59,19 @@ for bareme in [1, 2, 3]:
 
             # BAREME II: spouse without income
             if bareme == 2:
-                yearly_net_taxable_revenue_for_spouse = min(yearly_net_taxable_revenue * 0.3, 10710.0)
+                yearly_net_taxable_revenue_for_spouse = min(yearly_net_taxable_revenue * 0.3, 10930.0)
                 basic_bareme_1 = compute_basic_bareme(yearly_net_taxable_revenue_for_spouse)
                 basic_bareme_2 = compute_basic_bareme(yearly_net_taxable_revenue - yearly_net_taxable_revenue_for_spouse)
-                withholding_tax_amount = convert_to_month(max(basic_bareme_1 + basic_bareme_2 - 3381.2, 0))
+                withholding_tax_amount = convert_to_month(max(basic_bareme_1 + basic_bareme_2 - 4130.20, 0))
 
         if index == 0:
             lower_bound = 0
+            upper_bound = first_amount
         else:
             lower_bound = gross
+            upper_bound = gross + 15
         if gross == 7500:
             upper_bound = 2147483647
-        else:
-            upper_bound = gross + 15
 
         if bareme == 1:
             first_id = 1
@@ -81,28 +84,27 @@ for bareme in [1, 2, 3]:
 
     file.write(",,,,,,,,,,,,,,,\n")
 
+    for children in range(1, 21):
+        if children == 1:
+            withholding_tax_amount = 36.0
+        if children == 2:
+            withholding_tax_amount = 104.0
+        if children == 3:
+            withholding_tax_amount = 275.0
+        if children == 4:
+            withholding_tax_amount = 483.0
+        if children == 5:
+            withholding_tax_amount = 713.0
+        if children == 6:
+            withholding_tax_amount = 944.0
+        if children == 7:
+            withholding_tax_amount = 1174.0
+        if children >= 8:
+            withholding_tax_amount = 1428.0 + (children - 8) * 256.0
 
+        result = - max(withholding_tax_amount, 0.0)
 
-        # # Child Allowances
-        # if employee.dependent_children:
-        #     if employee.dependent_children == 1:
-        #         withholding_tax_amount -= 36.0
-        #     if employee.dependent_children == 2:
-        #         withholding_tax_amount -= 97.0
-        #     if employee.dependent_children == 3:
-        #         withholding_tax_amount -= 253.0
-        #     if employee.dependent_children == 4:
-        #         withholding_tax_amount -= 454.0
-        #     if employee.dependent_children == 5:
-        #         withholding_tax_amount -= 677.0
-        #     if employee.dependent_children == 6:
-        #         withholding_tax_amount -= 902.0
-        #     if employee.dependent_children == 7:
-        #         withholding_tax_amount -= 1128.0
-        #     if employee.dependent_children &gt;= 8:
-        #         withholding_tax_amount -= 1371.0 + (employee.dependent_children - 8) * 251.0
-
-        # result = - max(withholding_tax_amount, 0.0)
-
+        rule_id = 1410 + children - 1
+        file.write('%s,code,%s,%s,,,"result = min(%s, - (categories.PP + categories.PPRed + categories.FamRed + categories.ChA))",Child Allowance Belgium,Child Allowance Belgium,142,Ch.A,hr_payroll_rules_child,range,employee.dependent_children,,\n' % (rule_id, children, children, withholding_tax_amount))
 
 file.close()
