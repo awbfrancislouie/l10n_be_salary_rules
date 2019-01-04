@@ -25,12 +25,15 @@ for bareme in [1, 2, 3]:
     if bareme == 1:
         first_amount = 555
         gross_values = [0] + list(range(first_amount, 7500 + 15, 15))
+        label = ''
     elif bareme == 2:
         first_amount = 1065
         gross_values = [0] + list(range(first_amount, 7500 + 15, 15))
+        label = 'II'
     elif bareme == 3:
         first_amount = 15
         gross_values = [0] + list(range(first_amount, 7500 + 15, 15))
+        label = 'III'
 
     for index, gross in enumerate(gross_values):
 
@@ -80,31 +83,34 @@ for bareme in [1, 2, 3]:
         elif bareme == 3:
             first_id = 1201
 
-        file.write("%s,fix,%s,%s,,%s,,Withholding Tax,Withholding Tax Grid 2019 (Precompte Professionnel Bareme 2019),130,P.P,hr_payroll_rules_bareme,range,GROSS,,contrib_register_pp\n" % (first_id + index, lower_bound, upper_bound, -round(withholding_tax_amount, 2)))
+
+        file.write("%s,fix,%s,%s,,%s,,Withholding Tax,Withholding Tax Grid 2019 (Precompte Professionnel Bareme 2019),130,P.P,hr_payroll_rules_bareme%s,range,GROSS,,contrib_register_pp\n" % (first_id + index, lower_bound, upper_bound, -round(withholding_tax_amount, 2), label))
 
     file.write(",,,,,,,,,,,,,,,\n")
+    if bareme == 1:
+        file.write(",,,,,,,,,,,,,,,\n")
 
-    for children in range(1, 21):
-        if children == 1:
-            withholding_tax_amount = 36.0
-        if children == 2:
-            withholding_tax_amount = 104.0
-        if children == 3:
-            withholding_tax_amount = 275.0
-        if children == 4:
-            withholding_tax_amount = 483.0
-        if children == 5:
-            withholding_tax_amount = 713.0
-        if children == 6:
-            withholding_tax_amount = 944.0
-        if children == 7:
-            withholding_tax_amount = 1174.0
-        if children >= 8:
-            withholding_tax_amount = 1428.0 + (children - 8) * 256.0
+for children in range(1, 21):
+    if children == 1:
+        withholding_tax_amount = 36.0
+    if children == 2:
+        withholding_tax_amount = 104.0
+    if children == 3:
+        withholding_tax_amount = 275.0
+    if children == 4:
+        withholding_tax_amount = 483.0
+    if children == 5:
+        withholding_tax_amount = 713.0
+    if children == 6:
+        withholding_tax_amount = 944.0
+    if children == 7:
+        withholding_tax_amount = 1174.0
+    if children >= 8:
+        withholding_tax_amount = 1428.0 + (children - 8) * 256.0
 
-        result = - max(withholding_tax_amount, 0.0)
+    result = - max(withholding_tax_amount, 0.0)
 
-        rule_id = 1410 + children - 1
-        file.write('%s,code,%s,%s,,,"result = min(%s, - (categories.PP + categories.PPRed + categories.FamRed + categories.ChA))",Child Allowance Belgium,Child Allowance Belgium,142,Ch.A,hr_payroll_rules_child,range,employee.dependent_children,,\n' % (rule_id, children, children, withholding_tax_amount))
+    rule_id = 1410 + children - 1
+    file.write('%s,code,%s,%s,,,"result = min(%s, - (categories.PP + categories.PPRed + categories.FamRed + categories.ChA))",Child Allowance Belgium,Child Allowance Belgium,142,Ch.A,hr_payroll_rules_child,range,employee.dependent_children,,\n' % (rule_id, children, children, withholding_tax_amount))
 
 file.close()
